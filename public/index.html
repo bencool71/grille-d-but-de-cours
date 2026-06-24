@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grille de début de cours</title>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/master/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #e8eaf6;
+            --dark: #2c3e50;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light); color: var(--dark); line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: var(--dark); }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 28px; }
+
+        /* Intro */
+        .intro { background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid #ffc107; }
+        .intro strong { color: #856404; }
+
+        /* Cards */
+        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-title { color: var(--primary); margin-bottom: 15px; font-size: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+
+        /* Form */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--dark); }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 5px; transition: all 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #d35400; }
+        .btn-block { display: block; width: 100%; margin-top: 10px; }
+
+        /* Sections */
+        .section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .section h2 { color: var(--primary); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); }
+
+        /* Items */
+        .item { display: flex; align-items: center; padding: 10px; margin: 8px 0; background: #f8f9fa; border-radius: 5px; }
+        .item input[type="checkbox"] { margin-right: 15px; width: 20px; height: 20px; cursor: pointer; }
+
+        /* Score inputs */
+        .score-group { display: flex; align-items: center; gap: 15px; margin: 10px 0; }
+        .score-group input { width: 70px; text-align: center; font-size: 18px; padding: 8px; }
+
+        /* Totals */
+        .total { font-size: 18px; margin-top: 15px; color: var(--dark); }
+        .total-value { font-weight: bold; color: var(--danger); font-size: 24px; }
+        .overall-total { text-align: center; font-size: 20px; margin: 20px 0; }
+        .overall-value { font-weight: bold; color: #8e44ad; font-size: 28px; }
+
+        /* Teacher mode */
+        .teacher-mode { display: none; }
+        .teacher-mode.active { display: block; }
+
+        /* Session code */
+        .session-code { text-align: center; margin: 20px 0; }
+        .session-input { font-size: 20px; padding: 10px; width: 200px; text-align: center; border: 2px solid var(--primary); border-radius: 5px; }
+
+        /* QR Code */
+        .qr-container { text-align: center; margin: 20px 0; }
+        #qrcode { display: inline-block; margin: 10px 0; }
+        #sessionUrl { font-size: 14px; word-break: break-all; color: #7f8c8d; margin-top: 10px; }
+
+        /* Student data */
+        .class-section { margin-bottom: 30px; border: 1px solid #eee; border-radius: 10px; padding: 15px; background: white; }
+        .class-title { background: var(--primary); color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; font-size: 18px; }
+        .student-title { background: var(--secondary); color: white; padding: 10px; border-radius: 5px; margin: 15px 0 10px 0; display: flex; justify-content: space-between; font-weight: bold; }
+        .grid-header { background: #ecf0f1; padding: 8px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; font-weight: bold; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f2f2f2; }
+        tr:nth-child(even) { background: #f9f9f9; }
+
+        /* Validation buttons */
+        .validation-btn { padding: 5px 10px; font-size: 12px; margin: 2px; }
+        .validated { background: var(--secondary); color: white; }
+        .rejected { background: var(--danger); color: white; }
+        .pending { background: #95a5a6; color: white; }
+
+        /* Average */
+        .average-section { text-align: center; margin: 20px 0; font-size: 18px; }
+        .average-value { font-weight: bold; color: var(--danger); font-size: 24px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .form-group input, .form-group select { padding: 8px; }
+            .btn { padding: 8px 15px; font-size: 14px; }
+            table { font-size: 12px; }
+            th, td { padding: 5px; }
+        }
+
+        /* Loading */
+        .loading { text-align: center; padding: 20px; }
+        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--primary); width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Student total */
+        .student-total { font-weight: bold; color: var(--warning); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Grille de début de cours</h1>
+
+        <div class="intro">
+            <strong>⚠️ Instructions :</strong> Complète la grille puis le prof analysera ton auto-évaluation pour valider le matériel ou les notes que tu t'es attribué·e.
+            <br><br>
+            Pour la partie <strong>"Le matos"</strong> : il faut que tu aies sur ta table <strong>chaque objet coché</strong> dans ton auto-évaluation.
+            <br>
+            Pour les autres parties (<strong>"Le sourire"</strong> et <strong>"Je suis chauuuud"</strong>) : à toi de le montrer pendant le cours.
+        </div>
+
+        <!-- Mode Élève -->
+        <div id="studentMode">
+            <div class="card">
+                <div class="card-title">📝 Informations</div>
+
+                <div class="session-code">
+                    <label for="sessionCode">Code de session :</label>
+                    <input type="text" id="sessionCode" class="session-input" placeholder="Code donné par le prof" required>
+                    <button class="btn btn-primary" onclick="setSessionCode()">Valider</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentName">Nom :</label>
+                    <input type="text" id="studentName" placeholder="Entrez votre nom" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentClass">Classe :</label>
+                    <select id="studentClass" required>
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="2PRO">2PRO</option>
+                        <option value="1PRO">1PRO</option>
+                        <option value="TPRO">TPRO</option>
+                        <option value="3PM">3PM</option>
+                        <option value="1AEPE">1AEPE</option>
+                        <option value="2AEPE">2AEPE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentSubject">Matière :</label>
+                    <select id="studentSubject" required>
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="Soutien">Soutien</option>
+                        <option value="Maths">Maths</option>
+                        <option value="Sciences">Sciences</option>
+                        <option value="Co-intervention">Co-intervention</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentDate">Date :</label>
+                    <input type="date" id="studentDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentTime">Heure :</label>
+                    <input type="text" id="studentTime" placeholder="10H" pattern="[0-9]+[hH]?" title="Format: 10H ou 10" required>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="saveStudentData()">✅ Enregistrer mes réponses</button>
+            </div>
+
+            <div class="section">
+                <h2>📝 Le matos</h2>
+                <div class="item"><input type="checkbox" id="stylo" onchange="updateTotal()"><label for="stylo">J'ai un stylo bleu ou noir et un stylo rouge ou vert</label></div>
+                <div class="item"><input type="checkbox" id="feuilles" onchange="updateTotal()"><label for="feuilles">J'ai des feuilles</label></div>
+                <div class="item"><input type="checkbox" id="calculatrice" onchange="updateTotal()"><label for="calculatrice">J'ai une calculatrice</label></div>
+                <div class="item"><input type="checkbox" id="classeur" onchange="updateTotal()"><label for="classeur">J'ai mon classeur</label></div>
+                <div class="item"><input type="checkbox" id="coursPrecedent" onchange="updateTotal()"><label for="coursPrecedent">J'ai le cours précédent</label></div>
+                <div class="total">Total Le matos : <span class="total-value" id="matosTotal">0</span>/10</div>
+            </div>
+
+            <div class="section">
+                <h2>😊 Le sourire</h2>
+                <div class="score-group">
+                    <label>Comment je me sens aujourd'hui ?</label>
+                    <input type="number" id="sourireScore" min="0" max="10" value="0" oninput="limitScore(this, 0, 10)" onchange="updateTotal()">
+                </div>
+                <div class="total">Total Le sourire : <span class="total-value" id="sourireTotal">0</span>/10</div>
+            </div>
+
+            <div class="section">
+                <h2>🔥 Je suis chauuuud</h2>
+                <div class="score-group">
+                    <label>J'ai envie de travailler et progresser</label>
+                    <input type="number" id="chauudScore" min="0" max="10" value="0" oninput="limitScore(this, 0, 10)" onchange="updateTotal()">
+                </div>
+                <div class="total">Total Je suis chauuuud : <span class="total-value" id="chauudTotal">0</span>/10</div>
+            </div>
+
+            <div class="section">
+                <div class="overall-total">TOTAL GÉNÉRAL : <span class="overall-value" id="overallTotal">0</span>/30</div>
+            </div>
+        </div>
+
+        <!-- Mode Professeur -->
+        <div class="teacher-mode" id="teacherMode">
+            <div class="card">
+                <div class="card-title">👨‍🏫 Mode Professeur</div>
+
+                <div class="session-code">
+                    <label for="teacherSessionCode">Code de session :</label>
+                    <input type="text" id="teacherSessionCode" class="session-input" placeholder="Créez un code">
+                    <button class="btn btn-primary" onclick="createSession()">Créer session + QR Code</button>
+                </div>
+
+                <div class="qr-container" id="qrContainer" style="display: none;">
+                    <h3>QR Code pour les élèves :</h3>
+                    <div id="qrcode"></div>
+                    <p>URL : <span id="sessionUrl"></span></p>
+                    <button class="btn btn-warning" onclick="copySessionUrl()">Copier le lien</button>
+                </div>
+
+                <div style="margin: 20px 0; text-align: center;">
+                    <button class="btn btn-success" onclick="exportAllToCSV()">⬇️ Exporter tout en CSV</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Effacer toutes les données</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Données des élèves</div>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Chargement...</p>
+                </div>
+                <div id="teacherData"></div>
+                <div class="average-section">
+                    Moyenne générale : <span class="average-value" id="averageTotal">0</span>/30
+                </div>
+            </div>
+        </div>
+
+        <!-- Connexion Professeur -->
+        <div class="card" id="loginCard">
+            <div class="card-title">🔐 Connexion Professeur</div>
+            <div class="form-group">
+                <label for="teacherPassword">Code professeur :</label>
+                <input type="password" id="teacherPassword" class="session-input" placeholder="Entrez le code">
+                <button class="btn btn-primary btn-block" onclick="loginTeacher()">Se connecter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TEACHER_PASSWORD = "prof123";
+        let currentSessionCode = '';
+        let grillesData = [];
+
+        // Initialisation
+        window.onload = function() {
+            const today = new Date();
+            document.getElementById('studentDate').value = today.toISOString().split('T')[0];
+            document.getElementById('studentTime').value = `${today.getHours()}H`;
+            updateTotal();
+
+            // Vérifier si on est en mode élève avec code de session
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionParam = urlParams.get('session');
+            if (sessionParam) {
+                document.getElementById('sessionCode').value = sessionParam;
+                currentSessionCode = sessionParam;
+                document.getElementById('sessionCode').disabled = true;
+                setSessionCode();
+            }
+        };
+
+        function limitScore(input, min, max) {
+            let value = parseInt(input.value) || 0;
+            if (value < min) value = min;
+            if (value > max) value = max;
+            input.value = value;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const matosItems = ['stylo', 'feuilles', 'calculatrice', 'classeur', 'coursPrecedent'];
+            let matosScore = 0;
+            matosItems.forEach(item => { if (document.getElementById(item).checked) matosScore += 2; });
+            document.getElementById('matosTotal').textContent = matosScore;
+
+            const sourireScore = parseInt(document.getElementById('sourireScore').value) || 0;
+            document.getElementById('sourireTotal').textContent = sourireScore;
+
+            const chauudScore = parseInt(document.getElementById('chauudScore').value) || 0;
+            document.getElementById('chauudTotal').textContent = chauudScore;
+
+            const overallTotal = matosScore + sourireScore + chauudScore;
+            document.getElementById('overallTotal').textContent = overallTotal;
+        }
+
+        function formatTime(time) {
+            return time.replace(/[hH]/, 'H').replace(/:/g, 'H').replace(/H+$/, 'H').toUpperCase();
+        }
+
+        function setSessionCode() {
+            currentSessionCode = document.getElementById('sessionCode').value.trim().toUpperCase();
+            if (!currentSessionCode) {
+                alert('Veuillez entrer un code de session !');
+                return;
+            }
+            document.getElementById('sessionCode').disabled = true;
+            alert(`Code de session "${currentSessionCode}" validé !`);
+        }
+
+        async function saveStudentData() {
+            if (!currentSessionCode) {
+                alert('Veuillez d\'abord valider un code de session !');
+                return;
+            }
+
+            const studentName = document.getElementById('studentName').value.trim();
+            const studentClass = document.getElementById('studentClass').value;
+            const studentSubject = document.getElementById('studentSubject').value;
+            const studentDate = document.getElementById('studentDate').value;
+            let studentTime = document.getElementById('studentTime').value;
+
+            if (!studentName) { alert('Veuillez entrer votre nom !'); return; }
+            if (!studentClass) { alert('Veuillez sélectionner votre classe !'); return; }
+            if (!studentSubject) { alert('Veuillez sélectionner une matière !'); return; }
+            if (!studentDate) { alert('Veuillez sélectionner une date !'); return; }
+            if (!studentTime) { alert('Veuillez entrer une heure !'); return; }
+
+            studentTime = formatTime(studentTime);
+
+            const matosItems = ['stylo', 'feuilles', 'calculatrice', 'classeur', 'coursPrecedent'];
+            const matosValues = {};
+            matosItems.forEach(item => matosValues[item] = document.getElementById(item).checked);
+
+            const matosScore = parseInt(document.getElementById('matosTotal').textContent);
+            const sourireScore = parseInt(document.getElementById('sourireScore').value) || 0;
+            const chauudScore = parseInt(document.getElementById('chauudScore').value) || 0;
+
+            try {
+                const response = await fetch('/api/grilles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionCode: currentSessionCode,
+                        name: studentName,
+                        class: studentClass,
+                        subject: studentSubject,
+                        date: studentDate,
+                        time: studentTime,
+                        matos: matosValues,
+                        scores: { matosScore, sourireScore, chauudScore }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Vos réponses ont été enregistrées pour ${studentSubject} à ${studentTime}, ${studentName}!`);
+                    resetForm();
+                } else {
+                    alert('Erreur lors de l\'enregistrement : ' + (data.error || 'Inconnu'));
+                }
+            } catch (error) {
+                alert('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentClass').value = '';
+            document.getElementById('studentSubject').value = '';
+            ['stylo', 'feuilles', 'calculatrice', 'classeur', 'coursPrecedent'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+            document.getElementById('sourireScore').value = 0;
+            document.getElementById('chauudScore').value = 0;
+            updateTotal();
+        }
+
+        async function createSession() {
+            const code = document.getElementById('teacherSessionCode').value.trim().toUpperCase() || generateRandomCode();
+            document.getElementById('teacherSessionCode').value = code;
+            currentSessionCode = code;
+
+            try {
+                // Créer la session
+                await fetch('/api/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                // Générer le QR code
+                const url = window.location.href.split('?')[0] + '?session=' + code;
+                document.getElementById('sessionUrl').textContent = url;
+                document.getElementById('qrContainer').style.display = 'block';
+                document.getElementById('qrcode').innerHTML = '';
+                new QRCode(document.getElementById('qrcode'), {
+                    text: url,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff"
+                });
+
+                // Charger les données
+                loadSessionData();
+            } catch (error) {
+                alert('Erreur lors de la création de la session');
+            }
+        }
+
+        function generateRandomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function copySessionUrl() {
+            const url = document.getElementById('sessionUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Lien copié dans le presse-papiers !');
+            });
+        }
+
+        async function loginTeacher() {
+            const password = document.getElementById('teacherPassword').value;
+            if (password === TEACHER_PASSWORD) {
+                document.getElementById('loginCard').style.display = 'none';
+                document.getElementById('studentMode').style.display = 'none';
+                document.getElementById('teacherMode').classList.add('active');
+                document.getElementById('teacherPassword').value = '';
+            } else {
+                alert('Code incorrect !');
+            }
+        }
+
+        async function loadSessionData() {
+            if (!currentSessionCode) return;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('teacherData').innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/sessions/${currentSessionCode}/grilles`);
+                grillesData = await response.json();
+                displayTeacherData();
+            } catch (error) {
+                alert('Erreur lors du chargement des données');
+                document.getElementById('teacherData').innerHTML = '<p>Erreur de chargement des données</p>';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayTeacherData() {
+            const container = document.getElementById('teacherData');
+            if (grillesData.length === 0) {
+                container.innerHTML = '<p style="text-align: center;">Aucune donnée disponible pour cette session.</p>';
+                document.getElementById('averageTotal').textContent = '0';
+                return;
+            }
+
+            // Grouper par classe
+            const byClass = {};
+            grillesData.forEach(grille => {
+                if (!byClass[grille.class]) byClass[grille.class] = {};
+                if (!byClass[grille.class][grille.name]) byClass[grille.class][grille.name] = [];
+                byClass[grille.class][grille.name].push(grille);
+            });
+
+            const sortedClasses = Object.keys(byClass).sort();
+            let html = '';
+
+            for (const className of sortedClasses) {
+                html += `<div class="class-section">`;
+                html += `<div class="class-title">${className}</div>`;
+
+                const sortedStudents = Object.keys(byClass[className]).sort();
+
+                for (const studentName of sortedStudents) {
+                    // Calculer le total de l'élève
+                    let studentTotal = 0;
+                    let gridCount = 0;
+                    byClass[className][studentName].forEach(grille => {
+                        const effectiveTotal = (grille.matosValidated !== false ? grille.matosScore : 0) +
+                                               (grille.sourireValidated !== false ? grille.sourireScore : 0) +
+                                               (grille.chauudValidated !== false ? grille.chauudScore : 0);
+                        studentTotal += effectiveTotal;
+                        gridCount++;
+                    });
+                    const maxPossible = gridCount * 30;
+
+                    // Trier les grilles par date
+                    byClass[className][studentName].sort((a, b) => {
+                        const dateA = new Date(a.date + 'T' + a.time.replace('H', ':00'));
+                        const dateB = new Date(b.date + 'T' + b.time.replace('H', ':00'));
+                        return dateB - dateA;
+                    });
+
+                    html += `<div class="student-title">
+                        <span>${studentName}</span>
+                        <span class="student-total">Total validé: ${studentTotal}/${maxPossible}</span>
+                    </div>`;
+
+                    for (const grille of byClass[className][studentName]) {
+                        const effectiveTotal = (grille.matosValidated !== false ? grille.matosScore : 0) +
+                                              (grille.sourireValidated !== false ? grille.sourireScore : 0) +
+                                              (grille.chauudValidated !== false ? grille.chauudScore : 0);
+
+                        html += `<div class="grid-header">
+                            <span>📚 ${grille.subject} - ${grille.date} à ${grille.time}</span>
+                            <span><strong>Total: ${effectiveTotal}/30</strong></span>
+                        </div>`;
+
+                        html += `<table><thead><tr>`;
+                        html += `<th>Stylo</th><th>Feuilles</th><th>Calc.</th><th>Classeur</th><th>Cours</th>`;
+                        html += `<th>Matos<br><small>(10)</small></th><th>Sourire<br><small>(10)</small></th><th>Chauuuud<br><small>(10)</small></th>`;
+                        html += `<th>Total brut<br><small>(30)</small></th>`;
+                        html += `<th>Matos</th><th>Sourire</th><th>Chauuuud</th><th>Actions</th>`;
+                        html += `</tr></thead><tbody>`;
+
+                        const stylo = grille.matosStylo ? '✓' : '✗';
+                        const feuilles = grille.matosFeuilles ? '✓' : '✗';
+                        const calculatrice = grille.matosCalculatrice ? '✓' : '✗';
+                        const classeur = grille.matosClasseur ? '✓' : '✗';
+                        const coursPrecedent = grille.matosCoursPrecedent ? '✓' : '✗';
+
+                        const matosBtnClass = grille.matosValidated === true ? 'validated' :
+                                            grille.matosValidated === false ? 'rejected' : 'pending';
+                        const matosBtnText = grille.matosValidated === true ? '✓' :
+                                           grille.matosValidated === false ? '✗' : '⏳';
+
+                        const sourireBtnClass = grille.sourireValidated === true ? 'validated' :
+                                              grille.sourireValidated === false ? 'rejected' : 'pending';
+                        const sourireBtnText = grille.sourireValidated === true ? '✓' :
+                                               grille.sourireValidated === false ? '✗' : '⏳';
+
+                        const chauudBtnClass = grille.chauudValidated === true ? 'validated' :
+                                              grille.chauudValidated === false ? 'rejected' : 'pending';
+                        const chauudBtnText = grille.chauudValidated === true ? '✓' :
+                                               grille.chauudValidated === false ? '✗' : '⏳';
+
+                        html += `<tr>
+                            <td>${stylo}</td><td>${feuilles}</td><td>${calculatrice}</td><td>${classeur}</td><td>${coursPrecedent}</td>
+                            <td>${grille.matosScore}</td><td>${grille.sourireScore}</td><td>${grille.chauudScore}</td>
+                            <td>${grille.matosScore + grille.sourireScore + grille.chauudScore}</td>
+                            <td><button class="btn validation-btn ${matosBtnClass}" onclick="toggleValidation(${grille.id}, 'matos')" title="${grille.matosValidated === true ? 'Validé' : grille.matosValidated === false ? 'Refusé' : 'En attente'}">${matosBtnText}</button></td>
+                            <td><button class="btn validation-btn ${sourireBtnClass}" onclick="toggleValidation(${grille.id}, 'sourire')" title="${grille.sourireValidated === true ? 'Validé' : grille.sourireValidated === false ? 'Refusé' : 'En attente'}">${sourireBtnText}</button></td>
+                            <td><button class="btn validation-btn ${chauudBtnClass}" onclick="toggleValidation(${grille.id}, 'chauud')" title="${grille.chauudValidated === true ? 'Validé' : grille.chauudValidated === false ? 'Refusé' : 'En attente'}">${chauudBtnText}</button></td>
+                            <td><button class="btn btn-danger" onclick="deleteGrille(${grille.id})">Supprimer</button></td>
+                        </tr>`;
+
+                        html += `</tbody></table>`;
+                    }
+                }
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+            calculateAverage();
+        }
+
+        function calculateAverage() {
+            const allEffectiveTotals = grillesData.map(grille => {
+                return (grille.matosValidated !== false ? grille.matosScore : 0) +
+                       (grille.sourireValidated !== false ? grille.sourireScore : 0) +
+                       (grille.chauudValidated !== false ? grille.chauudScore : 0);
+            });
+
+            const average = allEffectiveTotals.length > 0 ?
+                (allEffectiveTotals.reduce((a, b) => a + b, 0) / allEffectiveTotals.length).toFixed(2) : 0;
+            document.getElementById('averageTotal').textContent = average;
+            return average;
+        }
+
+        async function toggleValidation(grilleId, part) {
+            const grille = grillesData.find(g => g.id === grilleId);
+            if (!grille) return;
+
+            const currentStatus = grille[`${part}Validated`];
+            const newStatus = currentStatus === null ? true : currentStatus === true ? false : null;
+
+            try {
+                await fetch(`/api/grilles/${grilleId}/validate`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ part, validated: newStatus })
+                });
+
+                // Mettre à jour localement
+                grille[`${part}Validated`] = newStatus;
+                saveData();
+                displayTeacherData();
+            } catch (error) {
+                alert('Erreur lors de la validation');
+            }
+        }
+
+        async function deleteGrille(grilleId) {
+            if (!confirm('Voulez-vous supprimer cette grille ?')) return;
+
+            try {
+                await fetch(`/api/grilles/${grilleId}`, { method: 'DELETE' });
+                grillesData = grillesData.filter(g => g.id !== grilleId);
+                displayTeacherData();
+            } catch (error) {
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        async function clearAllData() {
+            if (!confirm('Voulez-vous vraiment effacer toutes les données de cette session ?')) return;
+
+            try {
+                // Supprimer toutes les grilles de cette session
+                for (const grille of grillesData) {
+                    await fetch(`/api/grilles/${grille.id}`, { method: 'DELETE' });
+                }
+                grillesData = [];
+                displayTeacherData();
+            } catch (error) {
+                alert('Erreur lors de la suppression des données');
+            }
+        }
+
+        function exportAllToCSV() {
+            if (grillesData.length === 0) {
+                alert('Aucune donnée à exporter !');
+                return;
+            }
+
+            window.location.href = `/api/sessions/${currentSessionCode}/export`;
+        }
+    </script>
+</body>
+</html>
